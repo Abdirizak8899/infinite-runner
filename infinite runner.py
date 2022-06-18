@@ -1,128 +1,109 @@
-
 """
-Aouther : Abdirizak abdullahi hussein 
-DATE : 6/4/2022
-instegram : @Abdirizak_8899
-clubhouse : @binyamin_rd6
+Aouthor : Abdirizak abdullahi hussein
+Date : 18/6/2022
 """
+import pygame as pyg , random as  rand ,sys as ss,time
+from pygame.locals import *
 
-import pygame , sys , time , random 
+# setting the screen
+sw,sh = 720,500
+pyg.init()
+screen =  pyg.display.set_mode([sw,sh])
+pyg.display.set_caption('infinite runner')
 
-#initialize the screen 
-pygame .init()
-
-
-WIDTH = 400
-HIGHT = 400
-
-screen = pygame.display.set_mode([WIDTH,HIGHT])
-
-pygame.display.set_caption('player movement')
-# GAME VARIABLE 
-player_x = 50
-player_y = 280
-fps = 60
-x_movement = 0 
-y_movement = 0
-jumping = False
-y_velocity = 20 
-jumping_hight = y_velocity
-gravity = 1 
-obstacles = [300,400,600]
-obstacles_speed = 2
-active = False
+# Game variables
+player_x = 100
+player_y = sh-170
+vel = 20
+jump_hight = vel 
+gravity = 1
+player_speed = 5
+enemy_speed = 3
+jump = False
+timer = pyg.time.Clock()
+obstacles_list = []
+enemy_list =  []
 score = 0
 
-#codadka gameka
-pygame.mixer.init()
-backround = pygame.mixer.Sound('music.mp3')
-font = pygame.font.Font('freesansbold.ttf' , 16)
-colock = pygame.time.Clock()
-# rgb colors
-red = pygame.Color(255,0,0)
-black = pygame.Color(0,0,0)
-green = pygame.Color(0,255,0)
-white = pygame.Color(255,255,255)
-yellow = pygame.Color(255,255,0)
-pink  = pygame.Color(255,192,203)
-# drawing the player
+def enemy(obstacles_list):
+	while len(obstacles_list) <=5:
+		x_pos = rand.randint(sw//2,sw+sw+sw+sw+sw)
+		y_pos = sh-170
+		new_enemy = [x_pos,y_pos]
+		obstacles_list.append(new_enemy)
 
-run = True
-while run:
-	screen.fill(black)
-	colock.tick(60)
-	player = pygame.draw.rect(screen,green, [player_x,player_y,20,20])
-	line = pygame.draw.rect(screen,[119,118,110],[0,300, WIDTH,10])
-	backround.play()
-	text_score = font.render(f'DHIBCAHA: {score}', True , white , black)
-	screen.blit(text_score,[160,330])
-	# that we drawing the obstacles
-	obstacle0 = pygame.draw.rect(screen,red , [obstacles[0],280, 20,20])
-	obstacle1 = pygame.draw.rect(screen,green , [obstacles[1],280, 20,20])
-	obstacle2 = pygame.draw.rect(screen,pink , [obstacles[2],280, 20,20])
-	#event handling 
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			run = False
-		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_LEFT:
-				x_movement -= 5
-				y_movement = 0 
-			if event.key == pygame.K_RIGHT:
-				x_movement += 5
-				y_movement = 0
-			if event.type == pygame.K_ESCAPE:
-				pygame.quit()
-				sys.exit()
-
-		if event.type == pygame.KEYUP:
-			if event.key == pygame.K_LEFT:
-				x_movement = 0
-				y_movement = 0 
-			if event.key == pygame.K_RIGHT:
-				x_movement = 0
-				y_movement = 0
-	key_pressed = pygame.key.get_pressed()
+enemy(obstacles_list)
+# RGB VALUES
+red = [255,0,0]
+green = [0,255,0]
+blue = [0,0,255]
+yellow  = [0,255,255]
 
 
-	# waxa dhaqajinaya dhanka playerka uu jogo haddi uu ku dhoco wuu gafayaa loopkana wuu update garesmayaa
-	for i in range(len(obstacles)):
-		if active:
-			backround.play()
-			obstacles[i] -= obstacles_speed
-			if obstacles[i] < -20:
-				obstacles[i] = random.randint(470,570)
-				score += 1
-			if player.colliderect(obstacle0) or player.colliderect(obstacle1) or player.colliderect(obstacle2):
-				active = False
-				score = 0
-				obstacles = [300,400,600]
-				pass
-	player_x = player_x + x_movement
-	player_y = player_y + y_movement
 
 
-	# codekaan wuxuu sheegayaa in haddii escape lataabto uu loopka false noqonayo yacnii kabaxayo gameka
-	if key_pressed[pygame.K_ESCAPE]:
-		run = False
-	#kor uboodida playerka ayuu qeexayaaa codekan
-	if key_pressed[pygame.K_SPACE]:
-		jumping = True
-	if jumping:
-		player_y -= y_velocity
-		y_velocity -= gravity
-		if y_velocity <-jumping_hight:
-			jumping = False
-			y_velocity = jumping_hight
-	#---------------------------------------------
-	#xuduudaha inuusan kabixin ayuu qeexayaa codekan
-	if player_x < 0:
-		player_x = 0
-	if player_x > 380:
-	 	player_x = 380
-	#--------------------------------------------------
-	if key_pressed[pygame.K_SPACE]:
-		active = True
-	pygame.display.flip()
+# Creating enemies
 
-pygame.quit()
+def draw(obstacles_list):
+	for nw_enemy in obstacles_list:
+		nw_en = pyg.draw.rect(screen,[0,255,0],[nw_enemy[0],nw_enemy[1],20,20])
+		enemy_list.append(nw_en)
+
+
+gameover = False 
+while not gameover:
+
+	screen.fill([0,0,0])
+	timer .tick(60)
+
+	# floor is the white rectangle in the middle of the screen
+	floor = pyg.draw.rect(screen,[255,255,255],[0,sh-150,sw,20])
+	
+	# player is the box that we can control
+	player = pyg.draw.rect(screen,[255,0,0],[player_x,player_y,20,20])
+	
+	# drawing enemy into the screen
+	draw(obstacles_list)
+
+	# event handling 
+	for even in pyg.event.get():
+		if even.type == QUIT:
+			gameover = True
+
+	# moving enemy until offscreen and reseting their position
+	for enemy_pos in obstacles_list:
+		if enemy_pos[0] > -20:
+			enemy_pos[0] -= enemy_speed
+		else:
+			enemy_pos[0] = rand.randint(sw//2,sw+sw+sw+sw+sw+sw)
+
+	# detecting collisions
+	for enemy_pos in obstacles_list:
+		ex = enemy_pos[0] # ex = enemy position x
+		if ex >= player_x and ex <= player_x+20 and enemy_pos[1] == player_y or player_x+20 == ex and enemy_pos[1] == player_y: 
+			gameover = True        
+
+	# score font drawing into the screen
+	font  = pyg.font.SysFont('carbel',35)
+	tex = 'Score: ' +str(score)
+	label = font.render(tex,1,[255,255,255])
+	screen.blit(label,[50,50])
+
+	# listening what key is pressed then moving the player
+	key_pressed = pyg.key.get_pressed()
+	if key_pressed[K_RIGHT] and player_x <= sw-20-8:
+		player_x += player_speed
+	elif key_pressed[K_LEFT] and player_x >=0+8:
+		player_x -= player_speed
+	elif key_pressed[K_SPACE]:
+		jump = True
+	# jum motion
+	if jump:
+		player_y -= vel
+		vel -= gravity 
+		if vel <-jump_hight:
+			jump = False
+			vel  = jump_hight
+			score +=1
+
+	pyg.display.update()
